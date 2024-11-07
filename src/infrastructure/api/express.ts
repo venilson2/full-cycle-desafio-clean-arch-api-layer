@@ -1,30 +1,24 @@
 import express, { Express } from "express";
 import { Sequelize } from "sequelize-typescript";
 import ProductModel from "../product/product.model";
+import { productRoute } from "./routes/product.route";
 
 const app: Express = express();
-
-app.use(express.json());
-
 let sequelize: Sequelize;
 
-async function initializeDatabase(): Promise<Sequelize> {
-  const sequelizeInstance = new Sequelize({
-    dialect: "sqlite",
-    storage: ":memory:",
-    logging: false,
+app.use(express.json());
+app.use('/products', productRoute);
+
+async function setupDb() {
+  sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: ':memory:',
+    logging: false
   });
-  sequelizeInstance.addModels([ProductModel]);
-  await sequelizeInstance.sync();
-  return sequelizeInstance;
-}
+  sequelize.addModels([ProductModel]);
+  await sequelize.sync();
+};
 
-async function initializeApp() {
-  sequelize = await initializeDatabase();
-}
+setupDb();
 
-initializeApp().catch((error) => {
-  console.error("Failed to initialize application:", error);
-});
-
-export { app, sequelize };
+export { app, sequelize }
